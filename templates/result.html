@@ -67,8 +67,8 @@
 <body>
     <h1>Your Business Card</h1>
     <div class="card-container">
-        <img src="{{ url_for('download', filename=filename) }}" alt="Business Card">
+        <img src="data:image/png;base64,{{ img_data }}" alt="Business Card">
     </div>
-    <a href="{{ url_for('download', filename=filename) }}">Download Your Card</a>
+    <a href="{{ url_for('download') }}">Download Your Card</a>
 </body>
 </html>
