@@ -28,9 +28,9 @@ def create_card(name, title, email, phone, logo=None, profile_pic=None):
     # Add text
     draw.text((150, 1300), name, font=name_font, fill='#33221B')
     draw.text((150, 1600), title, font=title_font, fill='#33221B')
-    draw.text((500, 2000), "Contact", font=contact_font, fill='#6565D6')  # Moved down and right
-    draw.text((500, 2200), phone, font=details_font, fill='#33221B')  # Moved down and right
-    draw.text((500, 2300), email, font=details_font, fill='#33221B')  # Moved down and right
+    draw.text((500, 2000), "Contact", font=contact_font, fill='#6565D6')
+    draw.text((500, 2200), phone, font=details_font, fill='#33221B')
+    draw.text((500, 2300), email, font=details_font, fill='#33221B')
 
     # Add logo if provided
     if logo:
@@ -49,11 +49,11 @@ def create_card(name, title, email, phone, logo=None, profile_pic=None):
     # Add profile picture if provided
     if profile_pic:
         profile_pic = Image.open(profile_pic)
-        profile_pic = profile_pic.resize((1400, 1400))  # Resize based on radius
+        profile_pic = profile_pic.resize((1400, 1400))
         mask = Image.new('L', profile_pic.size, 0)
         draw_mask = ImageDraw.Draw(mask)
-        draw_mask.ellipse((0, 0, 1400, 1400), fill=255)  # Draw mask with circle
-        card.paste(profile_pic, (1450, 742), mask)  # Adjust based on center coordinates and radius
+        draw_mask.ellipse((0, 0, 1400, 1400), fill=255)
+        card.paste(profile_pic, (1450, 742), mask)
 
     return card
 
