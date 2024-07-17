@@ -1,10 +1,19 @@
-from flask import Flask, render_template, request, send_file, redirect, url_for, flash
+from flask import Flask, render_template, request, redirect, url_for, flash
 from PIL import Image, ImageDraw, ImageFont, ImageOps
 import io
 import base64
+import uuid
+import firebase_admin
+from firebase_admin import credentials, storage
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key'  # Replace with your actual secret key
+
+# Initialize Firebase Admin SDK
+cred = credentials.Certificate('firebase.json')
+firebase_admin.initialize_app(cred, {
+    'storageBucket': 'placement-85f9a.appspot.com'
+})
 
 def create_card(name, title, email, phone, logo=None, profile_pic=None):
     # Load the background image
@@ -50,6 +59,13 @@ def create_card(name, title, email, phone, logo=None, profile_pic=None):
 
     return card
 
+def upload_to_firebase(image_bytes, filename):
+    bucket = storage.bucket()
+    blob = bucket.blob(filename)
+    blob.upload_from_string(image_bytes, content_type='image/png')
+    blob.make_public()
+    return blob.public_url
+
 @app.route('/', methods=['GET', 'POST'])
 def index():
     if request.method == 'POST':
@@ -65,28 +81,30 @@ def index():
         img_io = io.BytesIO()
         card.save(img_io, 'PNG')
         img_io.seek(0)
-        encoded_img_data = base64.b64encode(img_io.getvalue()).decode('utf-8')
+        img_bytes = img_io.read()
 
-        return redirect(url_for('result', img_data=encoded_img_data))
+        filename = f"cards/{uuid.uuid4()}.png"
+        public_url = upload_to_firebase(img_bytes, filename)
+
+        return redirect(url_for('result', img_url=public_url))
 
     return render_template('index.html')
 
 @app.route('/result')
 def result():
-    img_data = request.args.get('img_data')
-    if not img_data:
+    img_url = request.args.get('img_url')
+    if not img_url:
         flash('No image data found. Please generate a card first.')
         return redirect(url_for('index'))
-    return render_template('result.html', img_data=img_data)
+    return render_template('result.html', img_url=img_url)
 
 @app.route('/download')
 def download():
-    img_data = request.args.get('img_data')
-    if not img_data:
+    img_url = request.args.get('img_url')
+    if not img_url:
         flash('No image data found. Please generate a card first.')
         return redirect(url_for('index'))
-    img_bytes = base64.b64decode(img_data)
-    return send_file(io.BytesIO(img_bytes), mimetype='image/png', as_attachment=True, download_name='business_card.png')
+    return redirect(img_url)
 
 if __name__ == '__main__':
     app.run(debug=True)
