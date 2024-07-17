@@ -1,17 +1,10 @@
-from flask import Flask, render_template, request, send_file, redirect, url_for, session, flash
+from flask import Flask, render_template, request, send_file, redirect, url_for, flash
 from PIL import Image, ImageDraw, ImageFont, ImageOps
 import io
 import base64
-import os
-import uuid
-from flask_session import Session
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key'  # Replace with your actual secret key
-
-# Configure Flask-Session
-app.config['SESSION_TYPE'] = 'filesystem'
-Session(app)
 
 def create_card(name, title, email, phone, logo=None, profile_pic=None):
     # Load the background image
@@ -74,25 +67,22 @@ def index():
         img_io.seek(0)
         encoded_img_data = base64.b64encode(img_io.getvalue()).decode('utf-8')
 
-        # Store the image data in the session
-        session['img_data'] = encoded_img_data
-
-        return redirect(url_for('result'))
+        return redirect(url_for('result', img_data=encoded_img_data))
 
     return render_template('index.html')
 
 @app.route('/result')
 def result():
-    img_data = session.get('img_data')
-    if img_data is None:
+    img_data = request.args.get('img_data')
+    if not img_data:
         flash('No image data found. Please generate a card first.')
         return redirect(url_for('index'))
     return render_template('result.html', img_data=img_data)
 
 @app.route('/download')
 def download():
-    img_data = session.get('img_data')
-    if img_data is None:
+    img_data = request.args.get('img_data')
+    if not img_data:
         flash('No image data found. Please generate a card first.')
         return redirect(url_for('index'))
     img_bytes = base64.b64decode(img_data)
