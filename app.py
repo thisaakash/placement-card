@@ -4,6 +4,7 @@ import io
 import base64
 import uuid
 import firebase_admin
+import requests
 from firebase_admin import credentials, storage
 
 app = Flask(__name__)
