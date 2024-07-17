@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request, send_file, redirect, url_for
-from PIL import Image, ImageDraw, ImageFont,ImageOps
+from PIL import Image, ImageDraw, ImageFont, ImageOps
 import io
 import base64
 import os
@@ -7,11 +7,6 @@ import uuid
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key'  # Replace with your actual secret key
-
-TEMP_DIR = 'tmp/'
-
-if not os.path.exists(TEMP_DIR):
-    os.makedirs(TEMP_DIR)
 
 def create_card(name, title, email, phone, logo=None, profile_pic=None):
     # Load the background image
@@ -46,7 +41,6 @@ def create_card(name, title, email, phone, logo=None, profile_pic=None):
         logo.putdata(newData)
         card.paste(logo, (130, 530), logo)
 
-
     # Add profile picture if provided
     if profile_pic:
         profile_pic = Image.open(profile_pic)
@@ -73,25 +67,22 @@ def index():
         img_io = io.BytesIO()
         card.save(img_io, 'PNG')
         img_io.seek(0)
-        filename = f"{uuid.uuid4()}.png"
-        filepath = os.path.join(TEMP_DIR, filename)
+        encoded_img_data = base64.b64encode(img_io.getvalue()).decode('utf-8')
 
-        with open(filepath, 'wb') as f:
-            f.write(img_io.getvalue())
-
-        return redirect(url_for('result', filename=filename))
+        return redirect(url_for('result', img_data=encoded_img_data))
 
     return render_template('index.html')
 
 @app.route('/result')
 def result():
-    filename = request.args.get('filename')
-    return render_template('result.html', filename=filename)
+    img_data = request.args.get('img_data')
+    return render_template('result.html', img_data=img_data)
 
-@app.route('/download/<filename>')
-def download(filename):
-    filepath = os.path.join(TEMP_DIR, filename)
-    return send_file(filepath, mimetype='image/png', as_attachment=True, download_name='business_card.png')
+@app.route('/download')
+def download():
+    img_data = request.args.get('img_data')
+    img_bytes = base64.b64decode(img_data)
+    return send_file(io.BytesIO(img_bytes), mimetype='image/png', as_attachment=True, download_name='business_card.png')
 
 if __name__ == '__main__':
     app.run(debug=True)
