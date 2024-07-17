@@ -1,4 +1,5 @@
 from flask import Flask, render_template, request, send_file, redirect, url_for
+from werkzeug.utils import quote
 from PIL import Image, ImageDraw, ImageFont,ImageOps
 import io
 import base64
