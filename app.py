@@ -8,7 +8,7 @@ import uuid
 app = Flask(__name__)
 app.secret_key = 'your_secret_key'  # Replace with your actual secret key
 
-TEMP_DIR = 'temp/'
+TEMP_DIR = 'tmp/'
 
 if not os.path.exists(TEMP_DIR):
     os.makedirs(TEMP_DIR)
