@@ -9,11 +9,23 @@ from firebase_admin import credentials, storage
 app = Flask(__name__)
 app.secret_key = 'your_secret_key'  # Replace with your actual secret key
 
-# Initialize Firebase Admin SDK
-cred = credentials.Certificate('firebase.json')
+# URL to fetch the Firebase service account JSON
+firebase_json_url = "https://api.jsonbin.io/v3/qs/66981a2de41b4d34e4135019"
+
+# Function to fetch JSON file from URL
+def fetch_firebase_json(url):
+    response = requests.get(url)
+    response.raise_for_status()
+    return response.json()
+
+# Fetch Firebase JSON and initialize Firebase Admin SDK
+firebase_json = fetch_firebase_json(firebase_json_url)
+
+cred = credentials.Certificate(firebase_json)
 firebase_admin.initialize_app(cred, {
     'storageBucket': 'placement-85f9a.appspot.com'
 })
+
 
 def create_card(name, title, email, phone, logo=None, profile_pic=None):
     # Load the background image
