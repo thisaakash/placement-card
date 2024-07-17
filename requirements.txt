@@ -1,3 +1,4 @@
 Flask
 Pillow
 flask_session
+firebase_admin
