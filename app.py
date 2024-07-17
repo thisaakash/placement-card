@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, send_file, redirect, url_for, session
+from flask import Flask, render_template, request, send_file, redirect, url_for, session, flash
 from PIL import Image, ImageDraw, ImageFont, ImageOps
 import io
 import base64
@@ -84,11 +84,17 @@ def index():
 @app.route('/result')
 def result():
     img_data = session.get('img_data')
+    if img_data is None:
+        flash('No image data found. Please generate a card first.')
+        return redirect(url_for('index'))
     return render_template('result.html', img_data=img_data)
 
 @app.route('/download')
 def download():
     img_data = session.get('img_data')
+    if img_data is None:
+        flash('No image data found. Please generate a card first.')
+        return redirect(url_for('index'))
     img_bytes = base64.b64decode(img_data)
     return send_file(io.BytesIO(img_bytes), mimetype='image/png', as_attachment=True, download_name='business_card.png')
 
